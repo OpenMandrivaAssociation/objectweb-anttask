@@ -6,8 +6,8 @@
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3
-Epoch:		0
+Release:        %mkrel 3.0.0
+Epoch:          0
 Group:          Development/Java
 License:        LGPL
 URL:            http://forge.objectweb.org/projects/monolog/
@@ -17,31 +17,36 @@ Requires(postun): java-gcj-compat
 BuildRequires:  java-gcj-compat-devel
 %else
 BuildArch:      noarch
+BuildRequires:  java-devel
 %endif
 Source0:        http://download.fr2.forge.objectweb.org/monolog/ow_util_ant_tasks_%{version}.tar.bz2
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
-#Vendor:         JPackage Project
-#Distribution:   JPackage
-Requires:       asm2
-BuildRequires:  java-devel
+Patch0:         objectweb-anttask-1.3.2-filesets.patch
 BuildRequires:  ant
-# FIXME: This is a nice circular dependency.
-BuildRequires:  asm2
-BuildRequires:	jpackage-utils >= 0:1.5
-Provides:	owanttask
+BuildRequires:  jpackage-utils
+BuildRequires:  xalan-j2
+Provides:       owanttask = %{epoch}:%{version}-%{release}
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 ObjectWeb Ant task
 
+%package javadoc
+Summary:        Javadoc for %{name}
+Group:          Development/Java
+
+%description javadoc
+Javadoc for %{name}.
+
 %prep
 %setup -c -q -n %{name}
+%patch0 -p1
 find . -name "*.class" -exec rm {} \;
 find . -name "*.jar" -exec rm {} \;
 
 %build
-export CLASSPATH=$(build-classpath asm2)
-export OPT_JAR_LIST=
-%ant jar
+export CLASSPATH=$(build-classpath xalan-j2)
+export OPT_JAR_LIST=:
+%{ant} jar jdoc
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -53,6 +58,11 @@ install -m 644 output/lib/ow_util_ant_tasks.jar $RPM_BUILD_ROOT%{_javadir}/%{nam
 pushd $RPM_BUILD_ROOT%{_javadir}
   ln -sf %{name}-%{version}.jar %{name}.jar
 popd
+
+# javadoc
+mkdir -p $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
+cp -a output/jdoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
+ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
 %if %{gcj_support}
 %{_bindir}/aot-compile-rpm
@@ -77,3 +87,7 @@ popd
 %attr(-,root,root) %{_libdir}/gcj/%{name}/*.jar.*
 %endif
 
+%files javadoc
+%defattr(0644,root,root,0755)
+%doc %{_javadocdir}/%{name}-%{version}
+%doc %{_javadocdir}/%{name}
