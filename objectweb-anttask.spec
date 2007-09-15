@@ -6,14 +6,12 @@
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3.0.0
+Release:        %mkrel 3.0.1
 Epoch:          0
 Group:          Development/Java
 License:        LGPL
 URL:            http://forge.objectweb.org/projects/monolog/
 %if %{gcj_support}
-Requires(post): java-gcj-compat
-Requires(postun): java-gcj-compat
 BuildRequires:  java-gcj-compat-devel
 %else
 BuildArch:      noarch
