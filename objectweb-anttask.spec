@@ -6,7 +6,7 @@
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3.0.1
+Release:        %mkrel 3.0.2
 Epoch:          0
 Group:          Development/Java
 License:        LGPL
@@ -20,7 +20,7 @@ BuildRequires:  java-devel
 Source0:        http://download.fr2.forge.objectweb.org/monolog/ow_util_ant_tasks_%{version}.tar.bz2
 Patch0:         objectweb-anttask-1.3.2-filesets.patch
 BuildRequires:  ant
-BuildRequires:  jpackage-utils
+BuildRequires:  java-rpmbuild
 BuildRequires:  xalan-j2
 Provides:       owanttask = %{epoch}:%{version}-%{release}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
