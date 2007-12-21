@@ -23,6 +23,7 @@ BuildRequires:  ant
 BuildRequires:  java-rpmbuild
 BuildRequires:  xalan-j2
 Provides:       owanttask = %{epoch}:%{version}-%{release}
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 ObjectWeb Ant task
