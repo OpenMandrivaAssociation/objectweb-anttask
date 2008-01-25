@@ -1,12 +1,10 @@
 %define section         free
 %define gcj_support     1
 
-# -----------------------------------------------------------------------------
-
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3.0.2
+Release:        %mkrel 3.0.3
 Epoch:          0
 Group:          Development/Java
 License:        LGPL
@@ -22,6 +20,7 @@ Patch0:         objectweb-anttask-1.3.2-filesets.patch
 BuildRequires:  ant
 BuildRequires:  java-rpmbuild
 BuildRequires:  xalan-j2
+BuildRequires:  asm2
 Provides:       owanttask = %{epoch}:%{version}-%{release}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -38,11 +37,10 @@ Javadoc for %{name}.
 %prep
 %setup -c -q -n %{name}
 %patch0 -p1
-find . -name "*.class" -exec rm {} \;
-find . -name "*.jar" -exec rm {} \;
+%remove_java_binaries
 
 %build
-export CLASSPATH=$(build-classpath xalan-j2)
+export CLASSPATH=$(build-classpath xalan-j2 asm2/ )
 export OPT_JAR_LIST=:
 %{ant} jar jdoc
 
