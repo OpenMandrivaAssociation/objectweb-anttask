@@ -4,7 +4,7 @@
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3.0.7
+Release:        %mkrel 3.0.8
 Epoch:          0
 Group:          Development/Java
 License:        LGPL
