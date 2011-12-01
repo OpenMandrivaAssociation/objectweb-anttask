@@ -45,20 +45,20 @@ export OPT_JAR_LIST=:
 %{ant} jar jdoc
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 # jars
-install -d -m 0755 $RPM_BUILD_ROOT%{_javadir}
+install -d -m 0755 %{buildroot}%{_javadir}
 
-install -m 644 output/lib/ow_util_ant_tasks.jar $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
-pushd $RPM_BUILD_ROOT%{_javadir}
+install -m 644 output/lib/ow_util_ant_tasks.jar %{buildroot}%{_javadir}/%{name}-%{version}.jar
+pushd %{buildroot}%{_javadir}
   ln -sf %{name}-%{version}.jar %{name}.jar
 popd
 
 # javadoc
-mkdir -p $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -a output/jdoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+mkdir -p %{buildroot}%{_javadocdir}/%{name}-%{version}
+cp -a output/jdoc/* %{buildroot}%{_javadocdir}/%{name}-%{version}
+ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name}
 
 %if %{gcj_support}
 %{_bindir}/aot-compile-rpm
