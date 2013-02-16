@@ -1,28 +1,19 @@
-%define section         free
-%define gcj_support     1
-
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        %mkrel 3.0.9
-Epoch:          0
+Release:        4
 Group:          Development/Java
 License:        LGPL
 URL:            http://forge.objectweb.org/projects/monolog/
-%if %{gcj_support}
-BuildRequires:  java-gcj-compat-devel
-%else
 BuildArch:      noarch
-BuildRequires:  java-devel
-%endif
+BuildRequires:  java-1.6.0-openjdk-devel
 Source0:        http://download.fr2.forge.objectweb.org/monolog/ow_util_ant_tasks_%{version}.tar.bz2
 Patch0:         objectweb-anttask-1.3.2-filesets.patch
 BuildRequires:  ant
 BuildRequires:  java-rpmbuild
 BuildRequires:  xalan-j2
-BuildRequires:  asm2
+#BuildRequires:  asm2
 Provides:       owanttask = %{epoch}:%{version}-%{release}
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 ObjectWeb Ant task
@@ -36,13 +27,14 @@ Javadoc for %{name}.
 
 %prep
 %setup -c -q -n %{name}
-%patch0 -p1
+%apply_patches
 %remove_java_binaries
 
 %build
 export CLASSPATH=$(build-classpath xalan-j2 asm2/ )
 export OPT_JAR_LIST=:
-%{ant} jar jdoc
+export JAVA_HOME=%_prefix/lib/jvm/java-1.6.0
+ant jar jdoc
 
 %install
 rm -rf $RPM_BUILD_ROOT
