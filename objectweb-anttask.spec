@@ -1,7 +1,7 @@
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        4
+Release:        5
 Group:          Development/Java
 License:        LGPL
 URL:            http://forge.objectweb.org/projects/monolog/
