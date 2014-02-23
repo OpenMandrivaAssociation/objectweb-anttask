@@ -1,147 +1,161 @@
+%{?_javapackages_macros:%_javapackages_macros}
+# Copyright (c) 2000-2005, JPackage Project
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the JPackage Project nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+%global _with_bootstrap 0
+
+%global with_bootstrap %{!?_with_bootstrap:0}%{?_with_bootstrap:1}
+%global without_bootstrap %{?_with_bootstrap:0}%{!?_with_bootstrap:1}
+
+
 Summary:        ObjectWeb Ant task
 Name:           objectweb-anttask
 Version:        1.3.2
-Release:        5
-Group:          Development/Java
-License:        LGPL
+Release:        9.0%{?dist}
+Epoch:          0
+
+License:        LGPLv2+
 URL:            http://forge.objectweb.org/projects/monolog/
 BuildArch:      noarch
-BuildRequires:  java-1.6.0-openjdk-devel
-Source0:        http://download.fr2.forge.objectweb.org/monolog/ow_util_ant_tasks_%{version}.tar.bz2
-Patch0:         objectweb-anttask-1.3.2-filesets.patch
-BuildRequires:  ant
-BuildRequires:  java-rpmbuild
-BuildRequires:  xalan-j2
-#BuildRequires:  asm2
-Provides:       owanttask = %{epoch}:%{version}-%{release}
+Source0:        http://download.forge.objectweb.org/monolog/ow_util_ant_tasks_1.3.2.zip
+BuildRequires:  java-devel
+BuildRequires:  ant >= 0:1.6
+BuildRequires:  jpackage-utils >= 0:1.6
+
+%if %{without_bootstrap}
+BuildRequires:  asm2
+Requires:       asm2
+%endif
+Requires:       ant
 
 %description
 ObjectWeb Ant task
 
-%package javadoc
+%package        javadoc
 Summary:        Javadoc for %{name}
-Group:          Development/Java
 
-%description javadoc
+
+%description    javadoc
 Javadoc for %{name}.
 
 %prep
 %setup -c -q -n %{name}
-%apply_patches
-%remove_java_binaries
+
+# extract jars iff in bootstrap mode
+%if %{without_bootstrap}
+find . -name "*.class" -exec rm {} \;
+find . -name "*.jar" -exec rm {} \;
+%endif
 
 %build
-export CLASSPATH=$(build-classpath xalan-j2 asm2/ )
-export OPT_JAR_LIST=:
-export JAVA_HOME=%_prefix/lib/jvm/java-1.6.0
-ant jar jdoc
+[ -z "$JAVA_HOME" ] && export JAVA_HOME=%{_jvmdir}/java
+export CLASSPATH=$(build-classpath asm2/asm2)
+ant -Dbuild.compiler=modern -Dbuild.sysclasspath=first jar jdoc
 
 %install
-rm -rf $RPM_BUILD_ROOT
-
 # jars
 install -d -m 0755 $RPM_BUILD_ROOT%{_javadir}
 
-install -m 644 output/lib/ow_util_ant_tasks.jar $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
-pushd $RPM_BUILD_ROOT%{_javadir}
-  ln -sf %{name}-%{version}.jar %{name}.jar
-popd
+install -m 644 output/lib/ow_util_ant_tasks.jar\
+ $RPM_BUILD_ROOT%{_javadir}/%{name}.jar
 
 # javadoc
-mkdir -p $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -a output/jdoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+cp -pr output/jdoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
-%if %{gcj_support}
-%{_bindir}/aot-compile-rpm
-%endif
-
-%clean
-%{__rm} -rf %{buildroot}
-
-%if %{gcj_support}
-%post
-%{update_gcjdb}
-
-%postun
-%{clean_gcjdb}
-%endif
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/ant.d
+echo "%{name}" > $RPM_BUILD_ROOT%{_sysconfdir}/ant.d/%{name}
 
 %files
-%defattr(0644,root,root,0755)
+%doc doc/* 
+%doc output/jdoc/*
 %{_javadir}/*
-%if %{gcj_support}
-%dir %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/*.jar.*
-%endif
+%{_sysconfdir}/ant.d/*
 
 %files javadoc
-%defattr(0644,root,root,0755)
-%doc %{_javadocdir}/%{name}-%{version}
 %doc %{_javadocdir}/%{name}
 
-
 %changelog
-* Fri Dec 03 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.3.2-3.0.7mdv2011.0
-+ Revision: 607005
-- rebuild
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-* Wed Mar 17 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.3.2-3.0.6mdv2010.1
-+ Revision: 523452
-- rebuilt for 2010.1
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
-* Thu Sep 03 2009 Christophe Fergeau <cfergeau@mandriva.com> 0:1.3.2-3.0.5mdv2010.0
-+ Revision: 426265
-- rebuild
+* Fri Jul 20 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
-* Sat Mar 07 2009 Antoine Ginies <aginies@mandriva.com> 0:1.3.2-3.0.4mdv2009.1
-+ Revision: 351640
-- rebuild
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
-* Fri Jan 25 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:1.3.2-3.0.3mdv2008.1
-+ Revision: 157955
-- BR asm2
+* Fri Sep 16 2011 Alexander Kurtakov <akurtako@redhat.com> 0:1.3.2-5
+- Adapt to current guidelines.
+- Properly integrate with ant using /etc/ant.d.
 
-  + Olivier Blin <oblin@mandriva.com>
-    - restore BuildRoot
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-4.5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
+* Mon Jan 11 2010 Andrew Overholt <overholt@redhat.com> 0:1.3.2-3.5
+- Fix Group tags
+- Fix Source0 URL.
 
-  + Anssi Hannula <anssi@mandriva.org>
-    - buildrequire java-rpmbuild, i.e. build with icedtea on x86(_64)
+* Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-3.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
-* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:1.3.2-3.0.1mdv2008.0
-+ Revision: 87270
-- rebuild to filter out autorequires of GCJ AOT objects
-- remove unnecessary Requires(post) on java-gcj-compat
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.3.2-2.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
-* Thu Aug 30 2007 David Walluck <walluck@mandriva.org> 0:1.3.2-3.0.0mdv2008.0
-+ Revision: 76263
-- BuildRequires: xalan-j2
-- does not require asm2
-- ship javadocs
-- temporarily disable filesets (not supported on ant 1.7.0)
+* Wed Jul  9 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0:1.3.2-1.4
+- drop repotag
 
-  + Adam Williamson <awilliamson@mandriva.org>
-    - rebuild for 2008
+* Thu May 29 2008 Tom "spot" Callaway <tcallawa@redhat.com> 0:1.3.2-1jpp.3
+- fix license tag
 
+* Wed Aug 29 2007 Deepak Bhole <dbhole@redhat.com> 0:1.3.2-1jpp.2
+- Remove distribution tag
 
-* Thu Aug 24 2006 David Walluck <walluck@mandriva.org> 0:1.3.2-2mdv2007.0
-- rebuild
+* Mon Feb 12 2007 Tania Bento <tbento@redhat.com> 0:1.3.2-1jpp.1
+- Changed %%BuildRoot tag.
+- Bootstrap Buildling.
+- Should not touch buildroot in %%prep.
+- Removed %%Vendor tag.
+- Removed %%Distribution tag.
+- Fixed %%Release tag.
+- Fixed %%Sourcei0 tag.
+- Added %%doc to %%files section.
+- Edited %%doc in %%files javadoc section.
 
-* Mon Jul 24 2006 David Walluck <walluck@mandriva.org> 0:1.3.2-1mdv2007.0
-- 1.3.2
-- requires asm2 (circular)
-- does not require xalan-j2
+* Thu Jul 20 2006 Ralph Apel <r.apel at r-apel.de> 0:1.3.2-1jpp
+- First JPP-1.7 release
+- Upgrade to 1.3.2, now requires asm2
+- Add javadoc subpackage
 
-* Mon Jun 05 2006 David Walluck <walluck@mandriva.org> 0:1.2-1.2mdv2007.0
-- rebuild for libgcj.so.7
-- aot compile
-
-* Sun May 29 2005 David Walluck <walluck@mandriva.org> 0:1.2-1.1mdk
-- release
-
-* Tue Sep 21 2004 Ralph Apel <r.apel at r-apel.de> 0:1.2-1jpp
+* Mon Sep 20 2004 Ralph Apel <r.apel at r-apel.de> 0:1.2-1jpp
 - First JPackage release
-
