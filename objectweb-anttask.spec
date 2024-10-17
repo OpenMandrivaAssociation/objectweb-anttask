@@ -42,7 +42,7 @@ Release:        9.0%{?dist}
 Epoch:          0
 
 License:        LGPLv2+
-URL:            http://forge.objectweb.org/projects/monolog/
+URL:            https://forge.objectweb.org/projects/monolog/
 BuildArch:      noarch
 Source0:        http://download.forge.objectweb.org/monolog/ow_util_ant_tasks_1.3.2.zip
 BuildRequires:  java-devel
